@@ -63,7 +63,7 @@ def main():
         # 1-d array for correlation
         movie_baseline = movie[start_frame:(first_odor_frame - 1)].mean(axis=0)
         movie_dff = (movie[first_odor_frame:(end_frame + 1)] - movie_baseline) / movie_baseline
-        # dff_full_trial.append(movie_dff.flatten())
+        # dff_full_trial.append(movie_dff.flatten()) # will get memory error later if I don't use the ROI
         merged_trial = np.broadcast_to(merged, movie_dff.shape)
         dff_full_trial.append(movie_dff[merged_trial]) # pixels in ROI
 
