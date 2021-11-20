@@ -52,7 +52,9 @@ def main():
     # for correlation matrix
     dff_full_trial = []
     dff_full_trial_legend = []
-    merged = merged.to_numpy().reshape((1, 5, 192, 192))
+    merged = merged.to_numpy().reshape((5, 192, 192))
+
+    response_volumes = 3
 
     for presentation_index in range(len(bounding_frames)):
         start_frame, first_odor_frame, end_frame = bounding_frames[presentation_index]
@@ -62,12 +64,11 @@ def main():
 
         # 1-d array for correlation
         movie_baseline = movie[start_frame:(first_odor_frame - 1)].mean(axis=0)
-        movie_dff = (movie[first_odor_frame:(end_frame + 1)] - movie_baseline) / movie_baseline
-        # dff_full_trial.append(movie_dff.flatten()) # will get memory error later if I don't use the ROI
-        merged_trial = np.broadcast_to(merged, movie_dff.shape)
-        dff_full_trial.append(movie_dff[merged_trial]) # pixels in ROI
+        movie_dff = (movie[first_odor_frame:first_odor_frame+response_volumes] - movie_baseline) / movie_baseline
+        movie_dff_max = np.amax(movie_dff, axis=0)
+        # dff_full_trial.append(movie_dff_max.flatten())
+        dff_full_trial.append(movie_dff_max[merged]) # pixels in ROI
 
-        response_volumes = 3
         max_dff = np.amax(dff[:response_volumes]) # changed from mean to max
 
         if len(odor_lists[presentation_index]) == 1:
@@ -114,10 +115,9 @@ def main():
     # plot correlation
     dff_full_trial_df = pd.DataFrame(dff_full_trial).T
     corr_mat = dff_full_trial_df.corr()
-    np.fill_diagonal(corr_mat.values, 0)
 
     fig, ax = plt.subplots()
-    im = ax.imshow(corr_mat)
+    im = ax.imshow(corr_mat, vmax=np.amax(np.triu(corr_mat, 1)))
 
     ax.set_xticks(np.arange(len(odor_lists)))
     ax.set_xticklabels(dff_full_trial_legend, rotation=90)
