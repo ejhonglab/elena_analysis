@@ -1,7 +1,6 @@
 import pandas as pd
 from scipy.spatial.distance import pdist
 import matplotlib.pyplot as plt
-from os.path import join
 from seaborn import clustermap
 from scipy.stats import spearmanr
 
@@ -14,6 +13,7 @@ def main():
     df = orn_responses
     df = df.drop(index=(0, 'spontaneous firing rate'))
 
+    # label community pns with green
     community = {'dm2', 'dp1m', 'vm2', 'dl2v', 'dm3', 'dm4', 'dm1', 'vm3', 'va2', 'va4'}
     lut = {}
     for i in df.columns:
@@ -30,7 +30,7 @@ def main():
     # fruits = fruits.loc[:, ~fruits.columns.str.contains('-2')]
 
     spearman = lambda u, v: 1 - spearmanr(u, v)[0]
-    metric = spearman
+    metric = spearman # 'cosine', 'euclidean', 'correlation'
     metric_name = 'spearman' if metric == spearman else metric
 
     gf = clustermap(fruits, metric=metric, row_colors=row_colors)
@@ -45,6 +45,7 @@ def main():
     gdf.fig.suptitle(metric_name + ' df')
     gdf.savefig(metric_name + '_clustermap_df.png')
 
+    # histogram
     Y_fruits = pdist(fruits, metric)
     Y_molecules = pdist(molecules, metric)
 
