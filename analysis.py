@@ -1,19 +1,25 @@
 from os.path import join, exists
+from collections import OrderedDict
 
+from skimage.filters import gaussian
 import numpy as np
 import pandas as pd
 import yaml
 import matplotlib.pyplot as plt
+import cv2
 
 from hong2p import util, thor
 
 
 def main():
-    stimfile_dir = r'E:\research\ejhonglab\2021-11-17\2'
+    stimfile_dir = r'E:\research\ejhonglab\2021-11-30\4'
     thorimage_dir = join(stimfile_dir, 'flyfood')
-    thorsync_dir = join(stimfile_dir, 'SyncData001')
+    thorsync_dir = join(stimfile_dir, 'SyncData')
     ignore_bounding_frame_cache = False
-    generate_csv = False # csv files for quantifying intensity
+    generate_csv = False  # csv files for quantifying intensity
+    sort_corr_mat = True
+    filter_movie = False
+    thresh_movie = False
 
     yaml_path, yaml_data, odor_lists = util.thorimage2yaml_info_and_odor_lists(thorimage_dir, stimfile_dir)
     odors = {
@@ -38,7 +44,7 @@ def main():
     merged = util.merge_ijroi_masks(masks)
     traces = util.extract_traces_bool_masks(movie, merged)
 
-    fig, axs = plt.subplots(traces.shape[1], sharex='col', figsize=(16, 6)) # df/f plot
+    fig, axs = plt.subplots(traces.shape[1], sharex='col', figsize=(16, 6))  # df/f plot
     cmap = {'#f6e8c3': '1 flyfood', '#d8b365': '4 flyfood', '#e08e2b': '5 flyfood',
             '#c7eae5': '1 control', '#5ab4ac': '4 control', '#28ada2': '5 control'}
 
@@ -50,11 +56,16 @@ def main():
     dff_full = np.zeros(shape=traces.shape)
 
     # for correlation matrix
-    dff_full_trial = []
+    dff_full_trial = {}
     dff_full_trial_legend = []
     merged = merged.to_numpy().reshape((5, 192, 192))
 
     response_volumes = 3
+
+    if filter_movie:
+        for i in range(movie.shape[0]):
+            for j in range(movie.shape[1]):
+                movie[i, j, :, :] = cv2.GaussianBlur(movie[i, j, :, :], (5, 5), 0)
 
     for presentation_index in range(len(bounding_frames)):
         start_frame, first_odor_frame, end_frame = bounding_frames[presentation_index]
@@ -64,12 +75,12 @@ def main():
 
         # 1-d array for correlation
         movie_baseline = movie[start_frame:(first_odor_frame - 1)].mean(axis=0)
-        movie_dff = (movie[first_odor_frame:first_odor_frame+response_volumes] - movie_baseline) / movie_baseline
+        movie_dff = (movie[first_odor_frame:first_odor_frame + response_volumes] - movie_baseline) / movie_baseline
         movie_dff_max = np.amax(movie_dff, axis=0)
         # dff_full_trial.append(movie_dff_max.flatten())
-        dff_full_trial.append(movie_dff_max[merged]) # pixels in ROI
+        # dff_full_trial.append(movie_dff_max[merged]) # pixels in ROI
 
-        max_dff = np.amax(dff[:response_volumes]) # changed from mean to max
+        max_dff = np.amax(dff[:response_volumes])  # changed from mean to max
 
         if len(odor_lists[presentation_index]) == 1:
             temp = odor_lists[presentation_index][0].copy()
@@ -98,7 +109,10 @@ def main():
             multi_odor_lists.append(temp)
         dff_full_trial_legend.append(temp['name'])
 
+        dff_full_trial[temp['name'] + str(presentation_index % 3)] = movie_dff_max[merged]
+
     # plot df/f
+    print(list(OrderedDict.fromkeys(dff_full_trial_legend)))
     [axs.plot(dff_full[:, i], color='k') for i in range(dff_full.shape[1])]
     handles, labels = axs.get_legend_handles_labels()
     ax_label = dict(zip(labels, handles))
@@ -113,7 +127,20 @@ def main():
         pd.DataFrame(multi_odor_lists).to_csv(join(stimfile_dir, 'multi_trial_max_dffs.csv'))
 
     # plot correlation
-    dff_full_trial_df = pd.DataFrame(dff_full_trial).T
+    dff_full_trial_df = pd.DataFrame(dff_full_trial)
+
+    if thresh_movie:
+        thresh = np.percentile(dff_full_trial_df, 50)
+        max_value = np.amax(dff_full_trial_df.to_numpy())
+        dff_full_trial_df.loc[:, :] = cv2.threshold(dff_full_trial_df.to_numpy(), thresh, max_value, cv2.THRESH_TOZERO)[1]
+
+    if sort_corr_mat:
+        odors_ind, odors = get_order()
+        dff_full_trial_df = dff_full_trial_df.loc[:, odors_ind]
+        dff_full_trial_legend = odors
+        fig_name = 'correlation_sorted.png'
+    else:
+        fig_name = 'correlation.png'
     corr_mat = dff_full_trial_df.corr()
 
     fig, ax = plt.subplots()
@@ -129,7 +156,21 @@ def main():
 
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig(join(stimfile_dir, 'correlation.png'))
+    filtered_image = 'smooth_thresh' if thresh_movie else 'smooth_' if filter_movie else ''
+    plt.savefig(join(stimfile_dir, filtered_image + fig_name))
+
+
+def get_order():
+    yaml_file = r'D:\research\ejhonglab\elena_olfactometer_configs\test.yaml'
+    with open(yaml_file, 'r') as stream:
+        data_loaded = yaml.safe_load(stream)
+
+    odors_flyfood = [i['name'] for i in data_loaded['odors'] if i['type'] == 'flyfood'] + ['-'+i['name'] for i in data_loaded['odors'] if i['type'] == 'flyfood'] + ['flyfood']
+    odors_control = [i['name'] for i in data_loaded['odors'] if i['type'] == 'control'] + ['-'+i['name'] for i in data_loaded['odors'] if i['type'] == 'control'] + ['control']
+    odors = np.repeat(odors_flyfood + odors_control, 3)
+    odors_ind = [odor + str(i % 3) for (i, odor) in enumerate(odors)]
+
+    return odors_ind, odors
 
 
 if __name__ == '__main__':

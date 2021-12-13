@@ -1,0 +1,70 @@
+backcall==0.2.0
+certifi==2021.10.8
+cloudpickle @ file:///tmp/build/80754af9/cloudpickle_1632508026186/work
+colorama==0.4.4
+cycler==0.11.0
+cytoolz==0.11.0
+dask==2021.10.0
+decorator==5.1.0
+drosolf==0.1.3
+fonttools==4.25.0
+fsspec @ file:///tmp/build/80754af9/fsspec_1636116461911/work
+gitdb==4.0.9
+GitPython==3.1.24
+h5py==3.5.0
+-e git+https://github.com/ejhonglab/hong2p.git@d94c0e690ba27aba225c14340f99957e36e6739a#egg=hong2p
+ijroi @ git+https://github.com/tom-f-oconnell/ijroi@1b5532ef1897955d6f73ed12ad519f77c895cbaf
+imagecodecs @ file:///C:/ci/imagecodecs_1635511087451/work
+imageio @ file:///tmp/build/80754af9/imageio_1617700267927/work
+ipdb==0.13.9
+ipython==7.29.0
+jedi==0.18.0
+joblib==1.1.0
+kiwisolver==1.3.2
+locket==0.2.1
+matplotlib @ file:///C:/ci/matplotlib-suite_1634667159685/work
+matplotlib-inline==0.1.3
+mkl-fft==1.3.1
+mkl-random @ file:///C:/ci/mkl_random_1626186184308/work
+mkl-service==2.4.0
+munkres==1.1.4
+networkx @ file:///tmp/build/80754af9/networkx_1633639043937/work
+numpy==1.21.4
+olefile @ file:///Users/ktietz/demo/mc3/conda-bld/olefile_1629805411829/work
+opencv-python==4.5.4.60
+packaging @ file:///tmp/build/80754af9/packaging_1625611678980/work
+pandas==1.3.4
+parso==0.8.2
+partd @ file:///tmp/build/80754af9/partd_1618000087440/work
+pickleshare==0.7.5
+Pillow==8.4.0
+plotly==5.4.0
+prompt-toolkit==3.0.22
+pydantic==1.8.2
+Pygments==2.10.0
+pyparsing==3.0.5
+PyQt5==5.15.6
+PyQt5-Qt5==5.15.2
+PyQt5-sip==12.9.0
+pyqtgraph==0.12.3
+python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
+pytz==2021.3
+PyWavelets @ file:///C:/ci/pywavelets_1607645631519/work
+PyYAML==6.0
+scikit-image==0.18.3
+scikit-learn==1.0.1
+scipy==1.7.2
+seaborn==0.11.2
+six @ file:///tmp/build/80754af9/six_1623709665295/work
+smmap==5.0.0
+tenacity==8.0.1
+threadpoolctl==3.0.0
+tifffile==2021.11.2
+toml==0.10.2
+toolz @ file:///tmp/build/80754af9/toolz_1636545406491/work
+tornado @ file:///C:/ci/tornado_1606924294691/work
+traitlets==5.1.1
+typing-extensions==3.10.0.2
+wcwidth==0.2.5
+wincertstore==0.2
+xarray==0.20.1
