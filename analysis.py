@@ -1,7 +1,7 @@
 from os.path import join, exists
 from collections import OrderedDict
+import pickle
 
-from skimage.filters import gaussian
 import numpy as np
 import pandas as pd
 import yaml
@@ -16,10 +16,12 @@ def main():
     thorimage_dir = join(stimfile_dir, 'flyfood')
     thorsync_dir = join(stimfile_dir, 'SyncData')
     ignore_bounding_frame_cache = False
-    generate_csv = False  # csv files for quantifying intensity
-    sort_corr_mat = True
-    filter_movie = False
-    thresh_movie = False
+    generate_csv = False    # quantify intensity
+
+    # options for correlation matrix:
+    sort_corr_mat = True    # group correlation matrix by odor type instead of presentation order
+    filter_movie = False    # apply a 5x5 pixel gaussian kernel to filter the movie
+    thresh_movie = False    # apply cv2 THRESH_TOZERO to max pixel values
 
     yaml_path, yaml_data, odor_lists = util.thorimage2yaml_info_and_odor_lists(thorimage_dir, stimfile_dir)
     odors = {
@@ -44,18 +46,17 @@ def main():
     merged = util.merge_ijroi_masks(masks)
     traces = util.extract_traces_bool_masks(movie, merged)
 
-    fig, axs = plt.subplots(traces.shape[1], sharex='col', figsize=(16, 6))  # df/f plot
+    # df/f plot
+    fig, axs = plt.subplots(traces.shape[1], sharex='col', figsize=(16, 6))
     cmap = {'#f6e8c3': '1 flyfood', '#d8b365': '4 flyfood', '#e08e2b': '5 flyfood',
             '#c7eae5': '1 control', '#5ab4ac': '4 control', '#28ada2': '5 control'}
+    dff_full = np.zeros(shape=traces.shape)
 
-    # for csv
+    # csv
     single_odor_lists = []
     multi_odor_lists = []
 
-    # for df/f
-    dff_full = np.zeros(shape=traces.shape)
-
-    # for correlation matrix
+    # correlation matrix
     dff_full_trial = {}
     dff_full_trial_legend = []
     merged = merged.to_numpy().reshape((5, 192, 192))
@@ -73,15 +74,13 @@ def main():
         dff = (traces[first_odor_frame:(end_frame + 1)] - baseline) / baseline
         dff_full[start_frame:(end_frame + 1)] = (traces[start_frame:(end_frame + 1)] - baseline) / baseline
 
-        # 1-d array for correlation
+        # 1-d array for correlation matrix
         movie_baseline = movie[start_frame:(first_odor_frame - 1)].mean(axis=0)
         movie_dff = (movie[first_odor_frame:first_odor_frame + response_volumes] - movie_baseline) / movie_baseline
         movie_dff_max = np.amax(movie_dff, axis=0)
-        # dff_full_trial.append(movie_dff_max.flatten())
-        # dff_full_trial.append(movie_dff_max[merged]) # pixels in ROI
+        max_dff = np.amax(dff[:response_volumes])
 
-        max_dff = np.amax(dff[:response_volumes])  # changed from mean to max
-
+        # csv
         if len(odor_lists[presentation_index]) == 1:
             temp = odor_lists[presentation_index][0].copy()
             temp['trial_max_dffs'] = max_dff
@@ -108,17 +107,19 @@ def main():
 
             multi_odor_lists.append(temp)
         dff_full_trial_legend.append(temp['name'])
-
         dff_full_trial[temp['name'] + str(presentation_index % 3)] = movie_dff_max[merged]
 
-    # plot df/f
+    # print presentation order and save to pickle file
+    odor_list_unique_cache = join(stimfile_dir, 'odor_list_unqiue.p')
     print(list(OrderedDict.fromkeys(dff_full_trial_legend)))
+    pickle.dump(list(OrderedDict.fromkeys(dff_full_trial_legend)), open(odor_list_unique_cache, "wb"))
+
+    # plot df/f
     [axs.plot(dff_full[:, i], color='k') for i in range(dff_full.shape[1])]
     handles, labels = axs.get_legend_handles_labels()
     ax_label = dict(zip(labels, handles))
 
     axs.legend(ax_label.values(), ax_label.keys())
-    # axs.legend(ax_label.values(), ax_label.keys(), bbox_to_anchor=(0, 1.5, 1, 0.2), loc="upper left", mode="expand", ncol=6)
     file_name = 'merged_dff.svg'
     plt.savefig(join(stimfile_dir, file_name))
 
@@ -161,6 +162,11 @@ def main():
 
 
 def get_order():
+    """group odors by type.
+    output:
+        odors: odors grouped by type with 3 repeats
+        odors_ind: same as 'odors' but each repeat is labeled 0, 1, or 2
+    """
     yaml_file = r'D:\research\ejhonglab\elena_olfactometer_configs\test.yaml'
     with open(yaml_file, 'r') as stream:
         data_loaded = yaml.safe_load(stream)
