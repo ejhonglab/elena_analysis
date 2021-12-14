@@ -46,6 +46,12 @@ def main():
     merged = util.merge_ijroi_masks(masks)
     traces = util.extract_traces_bool_masks(movie, merged)
 
+    if filter_movie:
+        movie = filtered(movie)
+        fig_name = 'smooth_correlation.png'
+    else:
+        fig_name = 'correlation.png'
+
     # df/f plot
     fig, axs = plt.subplots(traces.shape[1], sharex='col', figsize=(16, 6))
     cmap = {'#f6e8c3': '1 flyfood', '#d8b365': '4 flyfood', '#e08e2b': '5 flyfood',
@@ -62,11 +68,6 @@ def main():
     merged = merged.to_numpy().reshape((5, 192, 192))
 
     response_volumes = 3
-
-    if filter_movie:
-        for i in range(movie.shape[0]):
-            for j in range(movie.shape[1]):
-                movie[i, j, :, :] = cv2.GaussianBlur(movie[i, j, :, :], (5, 5), 0)
 
     for presentation_index in range(len(bounding_frames)):
         start_frame, first_odor_frame, end_frame = bounding_frames[presentation_index]
@@ -128,37 +129,7 @@ def main():
         pd.DataFrame(multi_odor_lists).to_csv(join(stimfile_dir, 'multi_trial_max_dffs.csv'))
 
     # plot correlation
-    dff_full_trial_df = pd.DataFrame(dff_full_trial)
-
-    if thresh_movie:
-        thresh = np.percentile(dff_full_trial_df, 50)
-        max_value = np.amax(dff_full_trial_df.to_numpy())
-        dff_full_trial_df.loc[:, :] = cv2.threshold(dff_full_trial_df.to_numpy(), thresh, max_value, cv2.THRESH_TOZERO)[1]
-
-    if sort_corr_mat:
-        odors_ind, odors = get_order()
-        dff_full_trial_df = dff_full_trial_df.loc[:, odors_ind]
-        dff_full_trial_legend = odors
-        fig_name = 'correlation_sorted.png'
-    else:
-        fig_name = 'correlation.png'
-    corr_mat = dff_full_trial_df.corr()
-
-    fig, ax = plt.subplots()
-    im = ax.imshow(corr_mat, vmax=np.amax(np.triu(corr_mat, 1)))
-
-    ax.set_xticks(np.arange(len(odor_lists)))
-    ax.set_xticklabels(dff_full_trial_legend, rotation=90)
-    ax.set_xticks(np.arange(1, len(odor_lists), 3))
-
-    ax.set_yticks(np.arange(len(odor_lists)))
-    ax.set_yticklabels(dff_full_trial_legend)
-    ax.set_yticks(np.arange(1, len(odor_lists), 3))
-
-    plt.colorbar(im)
-    plt.tight_layout()
-    filtered_image = 'smooth_thresh' if thresh_movie else 'smooth_' if filter_movie else ''
-    plt.savefig(join(stimfile_dir, filtered_image + fig_name))
+    plot_correlation(dff_full_trial, stimfile_dir, thresh_movie, sort_corr_mat, len(bounding_frames), dff_full_trial_legend, fig_name)
 
 
 def get_order():
@@ -177,6 +148,46 @@ def get_order():
     odors_ind = [odor + str(i % 3) for (i, odor) in enumerate(odors)]
 
     return odors_ind, odors
+
+
+def filtered(movie):
+    """apply a 5x5 pixel gaussian kernel to filter the movie. """
+    for i in range(movie.shape[0]):
+        for j in range(movie.shape[1]):
+            movie[i, j, :, :] = cv2.GaussianBlur(movie[i, j, :, :], (5, 5), 0)
+    return movie
+
+
+def plot_correlation(dff_full_trial, stimfile_dir, thresh_movie, sort_corr_mat, nn, dff_full_trial_legend, fig_name):
+    dff_full_trial_df = pd.DataFrame(dff_full_trial)
+    if thresh_movie:
+        thresh = np.percentile(dff_full_trial_df, 50)
+        max_value = np.amax(dff_full_trial_df.to_numpy())
+        dff_full_trial_df.loc[:, :] = cv2.threshold(dff_full_trial_df.to_numpy(), thresh, max_value, cv2.THRESH_TOZERO)[1]
+        fig_name = 'thresh_' + fig_name
+
+    if sort_corr_mat:
+        odors_ind, odors = get_order()
+        dff_full_trial_df = dff_full_trial_df.loc[:, odors_ind]
+        dff_full_trial_legend = odors
+        fig_name = 'sorted_' + fig_name
+
+    corr_mat = dff_full_trial_df.corr()
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(corr_mat, vmax=np.amax(np.triu(corr_mat, 1)))
+
+    ax.set_xticks(np.arange(nn))
+    ax.set_xticklabels(dff_full_trial_legend, rotation=90)
+    ax.set_xticks(np.arange(1, nn, 3))
+
+    ax.set_yticks(np.arange(nn))
+    ax.set_yticklabels(dff_full_trial_legend)
+    ax.set_yticks(np.arange(1, nn, 3))
+
+    plt.colorbar(im)
+    plt.tight_layout()
+    plt.savefig(join(stimfile_dir, fig_name))
 
 
 if __name__ == '__main__':
