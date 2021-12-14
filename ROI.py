@@ -1,37 +1,39 @@
 import os
+import pickle
 
-from skimage.filters import gaussian
 import numpy as np
 import pandas as pd
 import yaml
-import matplotlib.pyplot as plt
-import cv2
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans
-from seaborn import clustermap
 
 from hong2p import util, thor
-from analysis import get_order
+from analysis import filtered, plot_correlation
+
 
 def main():
-    write_dff_movie = False
-    filter_movie = False
+    write_dff_movie = False  # save the df/f movie to .tif
+    # options for correlation matrix:
+    sort_corr_mat = True    # group correlation matrix by odor type instead of presentation order
+    filter_movie = False    # apply a 5x5 pixel gaussian kernel to filter the movie
+    thresh_movie = False    # apply cv2 THRESH_TOZERO to max pixel values
 
     stimfile_dir = r'E:\research\ejhonglab\2021-11-30\3'
     thorimage_dir = os.path.join(stimfile_dir, 'flyfood')
     bounding_frame_yaml_cache = os.path.join(stimfile_dir, 'trial_bounding_frames.yaml')
-    odor_list_unique = ['control', 'ethyl acetate', 'benzaldehyde', 'cis-3-hexen-1-ol', 'butyric acid', '3-(methylthio)-1-propanol', 'flyfood', 'propionic acid', 'acetoin', 'isobutyric acid', 'acetic acid', 'ethanol', '-acetoin', '-propionic acid', '-ethyl acetate', '-butyric acid', '-cis-3-hexen-1-ol', '-isobutyric acid', '-acetic acid', '-3-(methylthio)-1-propanol', '-ethanol', '-benzaldehyde']
     with open(bounding_frame_yaml_cache, 'r') as f:
         bounding_frames = yaml.safe_load(f)
 
+    # load presentation order
+    odor_list_unique_cache = os.path.join(stimfile_dir, 'odor_list_unqiue.p')
+    odor_list_unique = pickle.load(open(odor_list_unique_cache, "rb"))
 
     movie = thor.read_movie(thorimage_dir)
     if filter_movie:
-        for i in range(movie.shape[0]):
-            for j in range(movie.shape[1]):
-                movie[i, j, :, :] = cv2.GaussianBlur(movie[i, j, :, :], (5, 5), 0)
+        movie = filtered(movie)
+        fig_name = 'smooth_ROI.png'
+    else:
+        fig_name = 'ROI.png'
 
+    # generate df/f movie
     dff_movie = np.zeros(shape=movie.shape)
     for presentation_index in range(len(bounding_frames)):
         start_frame, first_odor_frame, end_frame = bounding_frames[presentation_index]
@@ -53,43 +55,14 @@ def main():
         movie_dff = dff_movie[first_odor_frame:first_odor_frame + response_volumes]
         movie_dff_max = np.amax(movie_dff, axis=0)
 
+        # concatenate all pixels in ROI to a 1-d array
         values_in_roi = []
         [values_in_roi.append(movie_dff_max[rois[:, :, :, roi_index]]) for roi_index in range(rois.shape[3])]
         movie_dff_max_roi = np.concatenate(values_in_roi, axis=0)
         assert len(movie_dff_max_roi) == np.sum(rois)
-        dff_ROI[odor_list_unique[presentation_index//3] + str(presentation_index % 3)] = movie_dff_max_roi
+        dff_ROI[odor_list_unique[presentation_index // 3] + str(presentation_index % 3)] = movie_dff_max_roi
 
-    dff_full_trial_df = pd.DataFrame(dff_ROI)
-
-    odors_ind, odors = get_order()
-    dff_full_trial_df = dff_full_trial_df.loc[:, odors_ind]
-    dff_full_trial_legend = odors
-    fig_name = 'ROI_correlation_sorted_filtered.png' if filter_movie else 'ROI_correlation_sorted.png'
-
-    corr_mat = dff_full_trial_df.corr()
-
-    fig, ax = plt.subplots()
-    im = ax.imshow(corr_mat, vmax=np.amax(np.triu(corr_mat, 1)))
-
-    ax.set_xticks(np.arange(len(bounding_frames)))
-    ax.set_xticklabels(dff_full_trial_legend, rotation=90)
-    ax.set_xticks(np.arange(1, len(bounding_frames), 3))
-
-    ax.set_yticks(np.arange(len(bounding_frames)))
-    ax.set_yticklabels(dff_full_trial_legend)
-    ax.set_yticks(np.arange(1, len(bounding_frames), 3))
-
-    plt.colorbar(im)
-    plt.tight_layout()
-    plt.savefig(os.path.join(stimfile_dir, fig_name))
-
-    scaler = StandardScaler()
-    standardized = scaler.fit_transform(dff_full_trial_df.T)
-    d = pd.DataFrame(standardized, columns=dff_full_trial_df.columns)
-
-    pca = PCA()
-    pca.fit(standardized)
-    pca.explained_variance_ratio_
+        plot_correlation(dff_ROI, stimfile_dir, thresh_movie, sort_corr_mat, len(bounding_frames), odor_list_unique, fig_name)
 
 
 if __name__ == '__main__':
