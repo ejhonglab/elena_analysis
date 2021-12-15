@@ -10,7 +10,7 @@ from hong2p import util, thor
 def main():
     stimfile_dir = r'E:\research\ejhonglab\2021-11-30\3'
     os.mkdir(os.path.join(stimfile_dir, 'heatmap'))
-    thorimage_dir = os.path.join(stimfile_dir, 'flyfood')
+    thorimage_dir = os.path.join(stimfile_dir, 'flyfood')   # sometimes the folder is 'flyfood_00x' instead of 'flyfood'
     bounding_frame_yaml_cache = os.path.join(stimfile_dir, 'trial_bounding_frames.yaml')
     movie = thor.read_movie(thorimage_dir)
 

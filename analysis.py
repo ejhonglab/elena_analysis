@@ -13,8 +13,8 @@ from hong2p import util, thor
 
 def main():
     stimfile_dir = r'E:\research\ejhonglab\2021-11-30\4'
-    thorimage_dir = join(stimfile_dir, 'flyfood')
-    thorsync_dir = join(stimfile_dir, 'SyncData')
+    thorimage_dir = join(stimfile_dir, 'flyfood')   # sometimes the folder is 'flyfood_00x' instead of 'flyfood'
+    thorsync_dir = join(stimfile_dir, 'SyncData')   # sometimes the folder is 'SyncData00x' instead of 'SyncData'
     ignore_bounding_frame_cache = False
     generate_csv = False    # quantify intensity
 
@@ -111,7 +111,7 @@ def main():
         dff_full_trial[temp['name'] + str(presentation_index % 3)] = movie_dff_max[merged]
 
     # print presentation order and save to pickle file
-    odor_list_unique_cache = join(stimfile_dir, 'odor_list_unqiue.p')
+    odor_list_unique_cache = join(stimfile_dir, 'odor_list_unique.p')
     print(list(OrderedDict.fromkeys(dff_full_trial_legend)))
     pickle.dump(list(OrderedDict.fromkeys(dff_full_trial_legend)), open(odor_list_unique_cache, "wb"))
 

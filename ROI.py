@@ -17,13 +17,13 @@ def main():
     thresh_movie = False    # apply cv2 THRESH_TOZERO to max pixel values
 
     stimfile_dir = r'E:\research\ejhonglab\2021-11-30\3'
-    thorimage_dir = os.path.join(stimfile_dir, 'flyfood')
+    thorimage_dir = os.path.join(stimfile_dir, 'flyfood')   # sometimes the folder is 'flyfood_00x' instead of 'flyfood'
     bounding_frame_yaml_cache = os.path.join(stimfile_dir, 'trial_bounding_frames.yaml')
     with open(bounding_frame_yaml_cache, 'r') as f:
         bounding_frames = yaml.safe_load(f)
 
     # load presentation order
-    odor_list_unique_cache = os.path.join(stimfile_dir, 'odor_list_unqiue.p')
+    odor_list_unique_cache = os.path.join(stimfile_dir, 'odor_list_unique.p')
     odor_list_unique = pickle.load(open(odor_list_unique_cache, "rb"))
 
     movie = thor.read_movie(thorimage_dir)
