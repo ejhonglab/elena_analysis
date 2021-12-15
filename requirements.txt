@@ -1,6 +1,9 @@
 pyyaml
 drosolf
-scikit-image
+opencv-python
+bokeh
+holoviews
+
 
 # You may replace this line with:
 # git+https://github.com/ejhonglab/hong2p

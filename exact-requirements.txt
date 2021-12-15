@@ -1,4 +1,5 @@
 backcall==0.2.0
+bokeh @ file:///C:/ci/bokeh_1620784067744/work
 certifi==2021.10.8
 cloudpickle @ file:///tmp/build/80754af9/cloudpickle_1632508026186/work
 colorama==0.4.4
@@ -12,6 +13,7 @@ fsspec @ file:///tmp/build/80754af9/fsspec_1636116461911/work
 gitdb==4.0.9
 GitPython==3.1.24
 h5py==3.5.0
+holoviews @ file:///tmp/build/80754af9/holoviews_1632131566668/work
 -e git+https://github.com/ejhonglab/hong2p.git@d94c0e690ba27aba225c14340f99957e36e6739a#egg=hong2p
 ijroi @ git+https://github.com/tom-f-oconnell/ijroi@1b5532ef1897955d6f73ed12ad519f77c895cbaf
 imagecodecs @ file:///C:/ci/imagecodecs_1635511087451/work
@@ -38,7 +40,6 @@ parso==0.8.2
 partd @ file:///tmp/build/80754af9/partd_1618000087440/work
 pickleshare==0.7.5
 Pillow==8.4.0
-plotly==5.4.0
 prompt-toolkit==3.0.22
 pydantic==1.8.2
 Pygments==2.10.0
