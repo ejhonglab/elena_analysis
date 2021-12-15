@@ -22,3 +22,9 @@ thor2tiff .
     - `dff_movie.tif` in `flyfood` if `write_dff_movie == True`: df/f movie.
     - `x_ROI.png`: correlation calculated from maximum df/f during first 3 seconds after odor onset of each pixel in the glomeruli ROIs; `x` can be combinations of `smooth` `thresh` and `sorted` depending on your choice.
 7. Run `plot_stats.ipynb` in jupyter notebook. This will plot the maximum df/f traces for each odor trial for all experiments performed on the same day. 
+#### Example data
+HongLab @ Caltech Dropbox/Rotation/Elena Fall 2021/2021-11-30/3
+
+### Scripts not related to AL imaging
+1. `orn_distance.py`: code for data analysis on the Hallem dataset; data: `HC_data_raw.csv`.
+2. `control_mixture.ipynb`: select control mixture based on pmi, correlation, and water solubility; data folder: HongLab @ Caltech/Rotation/Elena Fall 2021/data
