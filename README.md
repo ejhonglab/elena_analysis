@@ -17,7 +17,7 @@ thor2tiff .
     - `odor_list_unqiue.p`: odor presentation order without repeat.
     - `trial_bounding_frames.yaml`: start, odor onset, and end time frames of each odor trial
 4. Run `heatmap.py`. This generates the maximum pixel df/f for each plane (x-axis) and repeat (y-axis) during the first 3 seconds after odor onset for each odor trial (title). Images are stored in the new folder `heatmap` in `stimfile_dir`.
-5. Identify glomeruli: 1) use https://github.com/ejhonglab/imagej_macros; 2) draw one ROI around each glomerulus; 3) rename so that ROIs with the same glomerulus have the same name; 4) save ROIs as `RoiSet1.zip` in the `flyfood` folder.
+5. Identify glomeruli: 1) install [this](https://github.com/ejhonglab/imagej_macros); 2) draw one ROI around each glomerulus; 3) rename so that ROIs with the same glomerulus have the same name; 4) save ROIs as `RoiSet1.zip` in the `flyfood` folder.
 6. Run `ROI.py`, this will generate the following: 
     - `dff_movie.tif` in `flyfood` if `write_dff_movie == True`: df/f movie.
     - `x_ROI.png`: correlation calculated from maximum df/f during first 3 seconds after odor onset of each pixel in the glomeruli ROIs; `x` can be combinations of `smooth` `thresh` and `sorted` depending on your choice.
