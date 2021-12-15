@@ -9,7 +9,7 @@ pip install -r exact-requirements.txt
 cd ~/flyfood
 thor2tiff .
 ```
-2. Draw ROI: 1) open raw.tif in ImageJ, analyze -> tools -> ROI manager; 2) draw one ROI around the antennal lobe for each plane; 3) rename all ROIs to 'al'; 4) save ROIs as `RoiSet.zip` in the `flyfood` folder.
+2. Draw ROI: 1) open `raw.tif` in ImageJ, analyze -> tools -> ROI manager; 2) draw one ROI around the antennal lobe for each plane; 3) rename all ROIs to 'al'; 4) save ROIs as `RoiSet.zip` in the `flyfood` folder.
 3. Run `analysis.py`, this will generate the following in `stimfile_dir`: 
     - `merged_dff.svg`: weighted average df/f across merged ROIs; legend: 1 flyfood/1 control -> each component; 4 flyfood/4 control -> incomplete mixture from dropping 1 component; 5 flyfood/5 control -> complete mixture.
     - `x_correlation.png`: correlation calculated from maximum df/f during first 3 seconds after odor onset of each pixel in the ROI; `x` can be combinations of `smooth` `thresh` and `sorted` depending on your choice.
