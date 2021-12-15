@@ -16,7 +16,7 @@ def main():
     filter_movie = False    # apply a 5x5 pixel gaussian kernel to filter the movie
     thresh_movie = False    # apply cv2 THRESH_TOZERO to max pixel values
 
-    stimfile_dir = r'E:\research\ejhonglab\2021-11-30\3'
+    stimfile_dir = r'E:\research\ejhonglab\2021-11-30\4'
     thorimage_dir = os.path.join(stimfile_dir, 'flyfood')   # sometimes the folder is 'flyfood_00x' instead of 'flyfood'
     bounding_frame_yaml_cache = os.path.join(stimfile_dir, 'trial_bounding_frames.yaml')
     with open(bounding_frame_yaml_cache, 'r') as f:
@@ -62,7 +62,7 @@ def main():
         assert len(movie_dff_max_roi) == np.sum(rois)
         dff_ROI[odor_list_unique[presentation_index // 3] + str(presentation_index % 3)] = movie_dff_max_roi
 
-        plot_correlation(dff_ROI, stimfile_dir, thresh_movie, sort_corr_mat, len(bounding_frames), odor_list_unique, fig_name)
+    plot_correlation(dff_ROI, stimfile_dir, thresh_movie, sort_corr_mat, len(bounding_frames), odor_list_unique, fig_name)
 
 
 if __name__ == '__main__':

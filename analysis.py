@@ -14,13 +14,13 @@ from hong2p import util, thor
 def main():
     stimfile_dir = r'E:\research\ejhonglab\2021-11-30\4'
     thorimage_dir = join(stimfile_dir, 'flyfood')   # sometimes the folder is 'flyfood_00x' instead of 'flyfood'
-    thorsync_dir = join(stimfile_dir, 'SyncData')   # sometimes the folder is 'SyncData00x' instead of 'SyncData'
+    thorsync_dir = join(stimfile_dir, 'SyncData001')
     ignore_bounding_frame_cache = False
     generate_csv = False    # quantify intensity
 
     # options for correlation matrix:
     sort_corr_mat = True    # group correlation matrix by odor type instead of presentation order
-    filter_movie = False    # apply a 5x5 pixel gaussian kernel to filter the movie
+    filter_movie = True    # apply a 5x5 pixel gaussian kernel to filter the movie
     thresh_movie = False    # apply cv2 THRESH_TOZERO to max pixel values
 
     yaml_path, yaml_data, odor_lists = util.thorimage2yaml_info_and_odor_lists(thorimage_dir, stimfile_dir)
@@ -159,6 +159,7 @@ def filtered(movie):
 
 
 def plot_correlation(dff_full_trial, stimfile_dir, thresh_movie, sort_corr_mat, nn, dff_full_trial_legend, fig_name):
+    """Calculate and output correlation matrix. """
     dff_full_trial_df = pd.DataFrame(dff_full_trial)
     if thresh_movie:
         thresh = np.percentile(dff_full_trial_df, 50)
