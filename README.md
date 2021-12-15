@@ -25,6 +25,6 @@ thor2tiff .
 #### Example data
 HongLab @ Caltech Dropbox/Rotation/Elena Fall 2021/2021-11-30/3
 
-### Scripts not related to AL imaging
-1. `orn_distance.py`: code for data analysis on the Hallem dataset; data: `HC_data_raw.csv`.
+### Code not related to AL imaging
+1. `orn_distance.py`: code for data analysis on Hallem dataset with fruit samples, `HC_data_raw.csv`.
 2. `control_mixture.ipynb`: select control mixture based on pmi, correlation, and water solubility; data folder: HongLab @ Caltech/Rotation/Elena Fall 2021/data
